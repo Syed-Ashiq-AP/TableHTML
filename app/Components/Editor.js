@@ -1104,6 +1104,7 @@ function Editor() {
     let table = document.querySelectorAll("table")[0]
     table.querySelectorAll('td').forEach(td => {
       td.removeAttribute('id')
+      td.removeAttribute('selected')
     })
     let html = formatHTML(table.outerHTML)
     if (navigator.clipboard) {
