@@ -2,26 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  padding: 5px;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.editor-box {
+  @apply w-full h-full border-neutral-400 border rounded-lg flex flex-col items-stretch;
+}
+
+.menu-bar,
+.tool-bar {
+  @apply w-full px-2 py-1  flex items-center gap-2;
+}
+
+.menu-bar a {
+  padding: 4px 15px;
+  @apply rounded-md;
+}
+
+.menu-bar a:hover {
+  @apply bg-neutral-100;
+}
+
+.edit {
+  @apply w-full flex flex-col items-center mt-2 overflow-auto;
+}
+
+.edit td {
+  padding: 5px;
+  border: 1px solid black;
+}
+
+div:focus {
+  outline: none;
+}
+
+label {
+  @apply font-bold mt-6;
+}
+
+table{
+  width: 1170px;
+  border-collapse: collapse;
+}
+
+.selected {
+  @apply !bg-neutral-100;
 }
