@@ -1075,15 +1075,44 @@ function Editor() {
     a.click()
   }
 
+  
+  const formatHTML = (html)=> {
+    let tab = '    ';
+    let result = '';
+    let indent= '';
+
+    html.split(/>\s*</).forEach(function(element) {
+        if (element.match( /^\/\w/ )) {
+            indent = indent.substring(tab.length);
+        }
+
+        result += indent + '<' + element + '>\r\n';
+
+        if (element.match( /^<?\w[^>]*[^\/]$/ ) && !element.startsWith("input")  ) {
+            indent += tab;
+        }
+    });
+
+    result = result.substring(1, result.length-3)
+
+
+    return result;
+}
+
+
   const copyHTML = () => {
     let table = document.querySelectorAll("table")[0]
+    table.querySelectorAll('td').forEach(td => {
+      td.removeAttribute('id')
+    })
+    let html = formatHTML(table.outerHTML)
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(table.outerHTML)
+      navigator.clipboard.writeText(html)
       window.alert('Table copied to clipboard');
     }
     else {
       let input = document.createElement('input')
-      input.value = table.outerHTML
+      input.value = html
       document.body.appendChild(input)
       input.select()
       document.execCommand('copy')

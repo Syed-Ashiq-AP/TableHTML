@@ -13,21 +13,9 @@ const Edit = forwardRef(({},ref) => {
   return (
     <div className='edit' ref={editor} contentEditable >
       
-  <table style={{width:"1170px"}}>
+  <table>
   <tbody>
-    <tr>
-      <td id='t1'>
-        At w3schools.com you will learn how to make a website. We offer free tutorials in all web development technologies.
-
-      </td>
-    </tr>
-    <tr>
-      
-    <td id='t2'>
-        At w3schools.com you will learn how to make a website. We offer free tutorials in all web development technologies.
-
-      </td>
-    </tr>
+    
   </tbody>
 </table>
     </div>
