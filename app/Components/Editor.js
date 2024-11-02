@@ -1185,12 +1185,14 @@ function Editor() {
 
 
   const copyHTML = () => {
-    let table = document.querySelectorAll("table")[0]
+    let edit = document.querySelectorAll(".edit")[0]
+    let style = edit[0]
+    let table = edit.querySelector('table')
     table.querySelectorAll('td').forEach(td => {
       td.removeAttribute('id')
       td.removeAttribute('selected')
     })
-    let html = formatHTML(table.outerHTML)
+    let html =  formatHTML(style.outerHTML() + table.outerHTML)
     if (navigator.clipboard) {
       navigator.clipboard.writeText(html)
       window.alert('Table copied to clipboard');
