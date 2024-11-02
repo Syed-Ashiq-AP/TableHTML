@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import MenuBar from './MenuBar'
 import ToolBar from './ToolBar'
-import { ColorPicker, Divider, Flex, Input, Menu, Modal, Space, Switch } from 'antd'
+import {Button, ColorPicker, Divider, Flex, Input, Menu, Modal, Space, Switch} from 'antd'
 import Edit from './Edit'
 import { FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold, FaItalic, FaLink, FaParagraph, FaRedo, FaUnderline, FaUndo } from "react-icons/fa";
 import { BiFontColor, BiHighlight } from "react-icons/bi";
@@ -347,6 +347,31 @@ function Editor() {
 
   }
 
+
+  const [classLabel, setClassLabel] = useState([])
+
+  const [currentClassTab, setCurrentClassTab] = useState("blue")
+
+  const [classData, setClassData] = useState({
+    "blue":["rgb(38, 40, 221)","rgb(255, 255, 255)","1.50em"],
+    "purple":["rgb(196, 25, 238)","rgb(255, 255, 255)","1.50em"]
+  })
+
+  const [newClassName, setNewClassName] = useState("")
+
+  const addClass=()=>{
+    setNewClassName(state=>{
+      if(state) {
+        setClassData(classDataState => ({
+          ...classDataState, [state]: ["", "", ""]
+        }))
+        console.log(classData)
+      }
+      return ""
+
+    })
+  }
+
   const menu = {
     Cell: [
 
@@ -589,7 +614,8 @@ function Editor() {
           format('h4')
         }
       },
-    ]
+    ],
+    Class:classLabel
   };
   const menuBtns = [
     {
@@ -667,6 +693,16 @@ function Editor() {
   const [Link, setLink] = useState()
 
   const isEffect = useRef(false)
+
+  const setTDClass=(cls)=>{
+    setActiveElement(state=> {
+      if (state) {
+        const elem = document.getElementById(state);
+        if (elem)
+          elem.classList.add(cls)
+      }
+    })
+  }
 
   useEffect(() => {
     if (isEffect.current === false) {
@@ -750,10 +786,58 @@ function Editor() {
         });
       });
 
+      setClassLabel((state)=>{
+        let list = []
+        Object.keys(classData).forEach(cls=>{
+          list.push( {
+            label: cls,
+            key:cls,
+            onClick:()=>{}
+          })
+        })
+        list = list.concat([
+          {
+            label:"",
+            key:"",
+          },
+          {
+            label: "Manage classes",
+            key:"manage-classes",
+            onClick:()=>{}
+          }
+        ])
+        return list
+      })
+
       return () => { isEffect.current = true;  };
 
     };
   }, [])
+
+  useEffect(()=>{
+    setClassLabel((state)=>{
+      let list = []
+      Object.keys(classData).forEach(cls=>{
+        list.push( {
+          label: cls,
+          key:cls,
+          onClick:()=>{setTDClass(cls)}
+        })
+      })
+      list = list.concat([
+        {
+          label:"",
+          key:"",
+        },
+        {
+          label: "Manage classes",
+          key:"manage-classes",
+          onClick:()=>{setIsClassOpen(true)}
+        }
+      ])
+      return list
+    })
+  },[classData])
 
   const maxColsSpan = () => {
     let max = 0
@@ -1173,6 +1257,9 @@ function Editor() {
     })
   };
 
+  const [isClassOpen,setIsClassOpen] = useState(false);
+
+
 
 
   return (
@@ -1180,13 +1267,74 @@ function Editor() {
       <MenuBar menu={menu} menuBtns={menuBtns} />
       <ToolBar state={btnstate} tools={tools} />
       <Divider style={{ margin: "5px", minWidth: "99%", width: "99%", borderColor: "#d0d0d0" }} />
-      <Edit ref={editor} />
-      <Modal open={isOpened} onOk={onOk} onCancel={() => { setIsOpened(false) }} onClose={() => { setIsOpened(false) }}>
+      <Edit classData={classData} ref={editor} />
+      <Modal
+          width={600}
+          open={isClassOpen}
+          onCancel={() => { setIsClassOpen(false) }}
+          footer={[]}
+      >
+        <h1>Property</h1>
+        <Flex vertical={false}>
+          <Flex align={'center'} vertical gap={5} style={{margin: 10}}>
+            <Menu
+                style={{
+                  minWidth: 150,
+                  width: 150,
+                  display: "block"
+                }}
+                mode="inline"
+                onClick={(e) => {
+                  setCurrentClassTab(e.key)
+                }}
+                selectedKeys={[currentClassTab]}
+                items={classLabel.slice(0, -2)}/>
+            <label>New Class</label>
+            <Input style={{width: "90%"}} onInput={(e) => {setNewClassName(e.target.value)}} value={newClassName} placeholder="Class name"/>
+            <Button onClick={addClass} style={{width: "90%"}}>Add Class</Button>
+          </Flex>
+          <Flex vertical gap={5} style={{margin: 10}}>
+            <label>Background Color</label>
+            <ColorPicker onChange={(e, c) => {
+              setClassData((state) => {
+                let data = state[currentClassTab]
+                data[0] = c
+                return {...state,[currentClassTab]:data}
+              })
+            }} value={classData[currentClassTab][0]}/>
+            <label>Font Color</label>
+            <ColorPicker onChange={(e, c) => {
+              setClassData((state)=>{
+                let data = state[currentClassTab]
+                data[1] = c
+                return {...state,[currentClassTab]:data}
+              })
+            }} value={classData[currentClassTab][1]}/>
+            <label>Font Size</label>
+            <Input onInput={(e) => {
+              setClassData((state)=>{
+              let data = state[currentClassTab]
+              data[2] = e.target.value
+              return {...state,[currentClassTab]:data}
+            })
+            }} value={classData[currentClassTab][2]} placeholder="Size"/>
+          </Flex>
+        </Flex>
+      </Modal>
+      <Modal open={isOpened} onOk={onOk} onCancel={() => {
+        setIsOpened(false)
+      }} onClose={() => {
+        setIsOpened(false)
+      }}>
         <h1>Link</h1>
         <label>Text</label>
-        <Input value={linktxt} onInput={(e) => { setLinkTxt(e.target.value) }} placeholder="Text" />
+        <Input value={linktxt} onInput={(e) => {
+          setLinkTxt(e.target.value)
+        }} placeholder="Text"/>
         <label>URL</label>
-        <Input value={linkurl} onInput={(e) => { setLinkUrl(e.target.value) }} placeholder="URL" />
+        <Input value={linkurl} onInput={(e) => {
+          setLinkUrl(e.target.value)
+        }} placeholder="URL"/>
       </Modal>
       <Modal width={600} open={isPropertyOpened} onOk={onPropertyOk} onCancel={() => { setIsPropertyOpened(false) }} onClose={() => { setIsPropertyOpened(false) }}>
         <h1>Property</h1>
