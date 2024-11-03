@@ -5,10 +5,11 @@ import ToolBar from './ToolBar'
 import {Button, ColorPicker, Divider, Flex, Input, Menu, Modal, Space, Switch} from 'antd'
 import Edit from './Edit'
 import { FaAlignCenter, FaAlignJustify, FaAlignLeft, FaAlignRight, FaBold, FaItalic, FaLink, FaParagraph, FaRedo, FaUnderline, FaUndo } from "react-icons/fa";
-import { BiFontColor, BiHighlight } from "react-icons/bi";
+import {BiFontColor, BiHighlight, BiTrash} from "react-icons/bi";
 import { TbCell, TbClearFormatting, TbColumns, TbH1, TbH2, TbH3, TbH4, TbTable, TbTextCaption } from "react-icons/tb";
 import { RiListUnordered, RiListOrdered } from "react-icons/ri";
 import { v4 as uuidv4 } from 'uuid';
+import {LuDelete} from "react-icons/lu";
 
 function Editor() {
 
@@ -33,6 +34,20 @@ function Editor() {
           cellSpan: td.colSpan
         }
       )
+
+      setClassData(state=>{
+        let classes = elem.classList
+        let cls = []
+        cls = Object.keys(state)
+        let clslist= []
+        classes.forEach(c=>{
+          if(cls.includes(c)){
+            clslist.push(c)
+          }
+        })
+        setActiveClassList(clslist)
+        return state
+      })
 
       if (["TD", "SPAN"].includes(elem.tagName)) {
         let isBold = elem.style.fontWeight === "bold",
@@ -350,6 +365,8 @@ function Editor() {
 
   const [classLabel, setClassLabel] = useState([])
 
+  const [activeClassList,setActiveClassList] = useState([])
+
   const [currentClassTab, setCurrentClassTab] = useState("blue")
 
   const [classData, setClassData] = useState({
@@ -358,6 +375,21 @@ function Editor() {
   })
 
   const [newClassName, setNewClassName] = useState("")
+
+  const removeClass = ()=>{
+    let ClassTab = ''
+    setCurrentClassTab((state) => {ClassTab=state;return state})
+    setClassData(state=>{
+      let copy = state
+      delete copy[ClassTab]
+      setCurrentClassTab(copy ? Object.keys(copy)[0] : "")
+      return copy
+    })
+
+    updateClassList()
+
+
+  }
 
   const addClass=()=>{
     setNewClassName(state=>{
@@ -695,12 +727,58 @@ function Editor() {
   const isEffect = useRef(false)
 
   const setTDClass=(cls)=>{
+    console.log("func called")
+    let active = ''
     setActiveElement(state=> {
-      if (state) {
-        const elem = document.getElementById(state);
-        if (elem)
-          elem.classList.add(cls)
+      active = state
+      return state
+    })
+
+    if (active) {
+      console.log("if func called")
+      const elem = document.getElementById(active);
+      if (elem) {
+        elem.classList.toggle(cls)
+        updateClassList()
       }
+    }
+  }
+
+  const updateClassList = ()=>{
+    setActiveClassList(activeState=> {
+      if(!activeState)
+        activeState = []
+      console.log(activeState)
+      setClassLabel((state) => {
+
+        let list = []
+        Object.keys(classData).forEach(cls => {
+
+            list.push({
+              label: (<span className={`${activeState.includes(cls)&&`bg-blue-100`} w-full h-full rounded p-1`}>{cls}</span>),
+              key: cls,
+              onClick: () => {
+                setTDClass(cls)
+              },
+            })
+
+        })
+        list = list.concat([
+          {
+            label: "",
+            key: "",
+          },
+          {
+            label: "Manage classes",
+            key: "manage-classes",
+            onClick: () => {
+              setIsClassOpen(true)
+            }
+          }
+        ])
+        return list
+      })
+      return activeClassList
     })
   }
 
@@ -786,28 +864,7 @@ function Editor() {
         });
       });
 
-      setClassLabel((state)=>{
-        let list = []
-        Object.keys(classData).forEach(cls=>{
-          list.push( {
-            label: cls,
-            key:cls,
-            onClick:()=>{}
-          })
-        })
-        list = list.concat([
-          {
-            label:"",
-            key:"",
-          },
-          {
-            label: "Manage classes",
-            key:"manage-classes",
-            onClick:()=>{}
-          }
-        ])
-        return list
-      })
+      updateClassList()
 
       return () => { isEffect.current = true;  };
 
@@ -815,29 +872,8 @@ function Editor() {
   }, [])
 
   useEffect(()=>{
-    setClassLabel((state)=>{
-      let list = []
-      Object.keys(classData).forEach(cls=>{
-        list.push( {
-          label: cls,
-          key:cls,
-          onClick:()=>{setTDClass(cls)}
-        })
-      })
-      list = list.concat([
-        {
-          label:"",
-          key:"",
-        },
-        {
-          label: "Manage classes",
-          key:"manage-classes",
-          onClick:()=>{setIsClassOpen(true)}
-        }
-      ])
-      return list
-    })
-  },[classData])
+    updateClassList()
+  },[classData,activeClassList])
 
   const maxColsSpan = () => {
     let max = 0
@@ -1186,13 +1222,13 @@ function Editor() {
 
   const copyHTML = () => {
     let edit = document.querySelectorAll(".edit")[0]
-    let style = edit[0]
+    let style = edit.querySelector('style')
     let table = edit.querySelector('table')
     table.querySelectorAll('td').forEach(td => {
       td.removeAttribute('id')
       td.removeAttribute('selected')
     })
-    let html =  formatHTML(style.outerHTML() + table.outerHTML)
+    let html =  formatHTML(style.outerHTML + table.outerHTML)
     if (navigator.clipboard) {
       navigator.clipboard.writeText(html)
       window.alert('Table copied to clipboard');
@@ -1276,7 +1312,7 @@ function Editor() {
           onCancel={() => { setIsClassOpen(false) }}
           footer={[]}
       >
-        <h1>Property</h1>
+        <h1>Classes</h1>
         <Flex vertical={false}>
           <Flex align={'center'} vertical gap={5} style={{margin: 10}}>
             <Menu
@@ -1303,7 +1339,7 @@ function Editor() {
                 data[0] = c
                 return {...state,[currentClassTab]:data}
               })
-            }} value={classData[currentClassTab][0]}/>
+            }} value={currentClassTab&&classData[currentClassTab][0]}/>
             <label>Font Color</label>
             <ColorPicker onChange={(e, c) => {
               setClassData((state)=>{
@@ -1311,7 +1347,7 @@ function Editor() {
                 data[1] = c
                 return {...state,[currentClassTab]:data}
               })
-            }} value={classData[currentClassTab][1]}/>
+            }} value={currentClassTab&&classData[currentClassTab][1]}/>
             <label>Font Size</label>
             <Input onInput={(e) => {
               setClassData((state)=>{
@@ -1319,7 +1355,8 @@ function Editor() {
               data[2] = e.target.value
               return {...state,[currentClassTab]:data}
             })
-            }} value={classData[currentClassTab][2]} placeholder="Size"/>
+            }} value={currentClassTab&&classData[currentClassTab][2]} placeholder="Size"/>
+            <Button icon={<BiTrash/>} variant={'solid'} color={'danger'} onClick={removeClass}/>
           </Flex>
         </Flex>
       </Modal>

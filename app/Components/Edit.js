@@ -18,8 +18,8 @@ const Edit = forwardRef(({classData},ref) => {
       style +=`
               .${key}{
               ${data[0] && `background-color: ${data[0]}!important;`}
-              ${data[1] && `font-size: ${data[2]}!important;`}
-              ${data[2] && `color: ${data[1]}!important;`}
+              ${data[2] && `font-size: ${data[2]}!important;`}
+              ${data[1] && `color: ${data[1]}!important;`}
               }
             `
     })

@@ -14,7 +14,7 @@ const MenuBar = ({menu,menuBtns}) => {
         const items = menu[category].map(item => ({
           key: item.key,
           label: item.label,
-          onClick: item.onClick
+          onClick: item.onClick,
         }));
 
         return (
