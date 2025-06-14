@@ -1,6 +1,6 @@
-# 📊 HTML Table Demo Project
+# 📊 HTML Table Generator
 
-This is a simple HTML project demonstrating how to create and style tables using pure HTML and CSS.
+This is React based Project made with tailwind CSS and Antd UI to build HTML Table without any knowledge of code
 
 ---
 
